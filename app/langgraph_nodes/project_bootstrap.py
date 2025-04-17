@@ -1,7 +1,13 @@
-# Node 2
+# Node2
 
 import os
 from pathlib import Path
+
+# ✅ ANSI Colors
+GREEN = "\033[92m"
+CYAN = "\033[96m"
+YELLOW = "\033[93m"
+RESET = "\033[0m"
 
 FOLDER_STRUCTURE = [
     "app",
@@ -12,8 +18,11 @@ FOLDER_STRUCTURE = [
 ]
 
 ESSENTIAL_FILES = {
-    "app/main.py": "# Entry point for FastAPI app\n\nfrom fastapi import FastAPI\n\napp = FastAPI()\n",
-    "app/database.py": "# DB connection setup placeholder\n",
+    "main.py": "# Entry point for FastAPI app\n\nfrom fastapi import FastAPI\n\napp = FastAPI()\n",
+    "database.py": "# DB connection setup placeholder\n",
+}
+
+ROOT_FILES = {
     "requirements.txt": "\n".join([
         "fastapi",
         "uvicorn",
@@ -35,28 +44,41 @@ ESSENTIAL_FILES = {
     ]),
 }
 
+
 def bootstrap_project_node(state: dict):
     """
     LangGraph node to create FastAPI folder structure inside project-specific folder
     """
+    print(f"\n{YELLOW}🛠️  Bootstrapping project for: {state['project_name']}{RESET}")
+
     project_name = state["project_name"]
     root_path = Path("generated_projects") / project_name
     root_path.mkdir(parents=True, exist_ok=True)
 
+    # ✅ Create folders
     for folder in FOLDER_STRUCTURE:
-        path = root_path / folder
-        path.mkdir(parents=True, exist_ok=True)
-        print(f"  ✓ Created folder: {path}")
+        folder_path = root_path / folder
+        folder_path.mkdir(parents=True, exist_ok=True)
+        print(f"{GREEN}  ✓ Created folder: {CYAN}{folder_path}{RESET}")
 
-    for file_rel_path, content in ESSENTIAL_FILES.items():
-        file_path = root_path / file_rel_path
+    # ✅ Create app files (inside app/)
+    for file_name, content in ESSENTIAL_FILES.items():
+        file_path = root_path / "app" / file_name
         with open(file_path, "w") as f:
             f.write(content)
-        print(f"  ✓ Created file: {file_path}")
+        print(f"{GREEN}  ✓ Created app file: {CYAN}{file_path}{RESET}")
+
+    # ✅ Create root-level files
+    for file_name, content in ROOT_FILES.items():
+        file_path = root_path / file_name
+        with open(file_path, "w") as f:
+            f.write(content)
+        print(f"{GREEN}  ✓ Created root file: {CYAN}{file_path}{RESET}")
+
+    print(f"\n{YELLOW}✅ Project bootstrap complete. Path: {CYAN}{root_path}{RESET}\n")
 
     return {
         **state,
         "project_path": str(root_path),
         "bootstrap_success": True
     }
-
