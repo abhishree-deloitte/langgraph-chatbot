@@ -1,6 +1,7 @@
 # app/langgraph_nodes/code_generator.py
 
 import os
+import re
 from pathlib import Path
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
@@ -18,52 +19,87 @@ def generate_code_node(state: dict, model=None):
         )
 
     project_path = Path(state["project_path"])
-    api_dir = project_path / "app" / "api" / "routes"
-    service_dir = project_path / "app" / "services"
-    schema_dir = project_path / "app" / "schemas"
-
-    api_dir.mkdir(parents=True, exist_ok=True)
-    service_dir.mkdir(parents=True, exist_ok=True)
-    schema_dir.mkdir(parents=True, exist_ok=True)
+    models_path = project_path / "app" / "models" / "models.py"
+    tests_path = project_path / "tests"
 
     srs = state["srs_analysis"]
+    models_code = models_path.read_text() if models_path.exists() else "# models.py not found"
 
-    base_prompt = f"""
-You are a senior backend engineer working with FastAPI.
-Based on the following API design, generate code for:
-1. FastAPI route handlers (in app/api/routes/)
-2. Business logic as services (in app/services/)
-3. Request/response Pydantic schemas (in app/schemas/)
+    # Optional: Include existing test stubs (if any)
+    test_files = []
+    if tests_path.exists():
+        for file in tests_path.glob("*.py"):
+            test_files.append(f"\n# {file.name}\n" + file.read_text())
+    test_info = "\n---\nThese are the tests that will be run against your code:\n" + "\n".join(test_files) if test_files else ""
 
-Do NOT include markdown or triple backticks.
-Only return Python code, and split each section clearly with a marker like:
-# === FILE: app/api/routes/leave_routes.py ===
-<code>
+    # 🔥 Updated LLM Prompt
+    prompt = f"""
+You are a professional FastAPI engineer working in a production-grade environment.
 
-API Design:
+You are tasked with generating clean, modular, production-level code for the following folders:
+- app/api/routes/
+- app/services/
+- app/schemas/
+
+The SQLAlchemy models you must build on are:
+{models_code}
+
+The system you are building is based on the following Software Requirements:
 {srs}
+
+{test_info}
+
+Your tech stack:
+- FastAPI
+- PostgreSQL (via SQLAlchemy ORM)
+- Pydantic for schemas
+- Alembic for migrations
+- Pytest for testing
+
+❗IMPORTANT:
+- All database interaction must use SQLAlchemy ORM
+- Use correct DB session patterns (e.g., Dependency Injection if needed)
+- Use PostgreSQL-compatible datatypes and logic
+- Do NOT generate boilerplate or placeholder logic
+- Write real business logic that will pass the tests
+- Follow clean code practices, proper naming, separation of concerns
+- All return values should be valid, structured, and realistic
+- Ensure routes are connected to FastAPI app in `main.py`
+- Prefix each router with its appropriate API path:
+  - /api/dashboard
+  - /api/lms
+  - /api/pods
+  - /api/auth
+
+Format your response with:
+**app/path/to/file.py**
+```python
+<code>
+```
+Only include valid code files. No extra text or explanation.
 """
 
     response = model([
         SystemMessage(content="You are a professional backend engineer."),
-        HumanMessage(content=base_prompt)
+        HumanMessage(content=prompt)
     ])
 
-    code_blocks = response.content.split("# === FILE:")
+    # ✅ Match file headers and code blocks using triple backtick syntax
+    pattern = r"\*\*(.*?)\*\*\s*```(?:python)?\s*([\s\S]*?)\s*```"
+    matches = re.findall(pattern, response.content)
 
-    for block in code_blocks:
-        if not block.strip():
-            continue
+    if not matches:
+        print(f"{YELLOW}⚠️ No code blocks matched. LLM may not have followed format.{RESET}")
+
+    for rel_path, code in matches:
         try:
-            header, code = block.strip().split("===", 1)
-            rel_path = header.strip()
-            file_path = project_path / rel_path
+            file_path = project_path / rel_path.strip()
             file_path.parent.mkdir(parents=True, exist_ok=True)
             with open(file_path, "w") as f:
                 f.write(code.strip())
             print(f"{GREEN}  ✓ Generated:{RESET} {CYAN}{file_path}{RESET}")
         except Exception as e:
-            print(f"{CYAN}⚠️ Skipping malformed block: {e}{RESET}")
+            print(f"{YELLOW}⚠️ Failed to write {rel_path}: {e}{RESET}")
 
     return {
         **state,

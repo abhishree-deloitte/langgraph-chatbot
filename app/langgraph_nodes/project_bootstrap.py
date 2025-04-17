@@ -25,6 +25,7 @@ ROOT_FILES = {
         "alembic",
         "python-dotenv",
         "pytest",
+        "asyncpg"
     ]),
     ".env": "# Add your environment variables here\n",
     "README.md": "# Auto-generated FastAPI project\n\nGenerated using LangGraph-powered AI system.",
