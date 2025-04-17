@@ -1,9 +1,10 @@
-# Node 1
+# node 1
 
 import os
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 from app.utils.docx_parser import extract_text_from_docx
+from app.utils.colors import GREEN, CYAN, YELLOW, RESET, BOLD
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -14,8 +15,10 @@ def analyze_srs_node(state, model=None):
     """
     LangGraph node to analyze the SRS and extract key backend requirements
     """
-
     file_path = state["file_path"]
+    project_name = Path(file_path).stem.lower().replace(" ", "_")
+    print(f"\n{YELLOW}📄 Analyzing SRS file: {CYAN}{file_path}{RESET}")
+
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise EnvironmentError("GROQ_API_KEY is not set in .env file.")
@@ -29,6 +32,8 @@ def analyze_srs_node(state, model=None):
         )
 
     srs_text = extract_text_from_docx(file_path)
+
+    print(f"{YELLOW}🔎 Extracting requirements from SRS...{RESET}")
 
     prompt = f"""
 You are a software architect. Analyze the following SRS and extract:
@@ -47,7 +52,7 @@ SRS:
         HumanMessage(content=prompt)
     ])
 
-    project_name = Path(file_path).stem.lower().replace(" ", "_")
+    print(f"{GREEN}✅ SRS analysis complete. Project name inferred: {BOLD}{project_name}{RESET}")
 
     return {
         **state,

@@ -1,13 +1,7 @@
-# Node2
+# node 2
 
-import os
 from pathlib import Path
-
-# ✅ ANSI Colors
-GREEN = "\033[92m"
-CYAN = "\033[96m"
-YELLOW = "\033[93m"
-RESET = "\033[0m"
+from app.utils.colors import GREEN, CYAN, YELLOW, RESET
 
 FOLDER_STRUCTURE = [
     "app",
@@ -49,7 +43,7 @@ def bootstrap_project_node(state: dict):
     """
     LangGraph node to create FastAPI folder structure inside project-specific folder
     """
-    print(f"\n{YELLOW}🛠️  Bootstrapping project for: {state['project_name']}{RESET}")
+    print(f"\n{YELLOW}🛠️  Bootstrapping project for: {CYAN}{state['project_name']}{RESET}")
 
     project_name = state["project_name"]
     root_path = Path("generated_projects") / project_name
