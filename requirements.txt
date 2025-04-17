@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+langchain
+langgraph
+openai
+pydantic
+python-docx
+sqlalchemy
+psycopg2-binary
+alembic
+pytest
