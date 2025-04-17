@@ -83,6 +83,7 @@ Only include valid code files. No extra text or explanation.
         SystemMessage(content="You are a professional backend engineer."),
         HumanMessage(content=prompt)
     ])
+    lm_calls = state.get("llm_calls", 0) + 1
 
     # ✅ Match file headers and code blocks using triple backtick syntax
     pattern = r"\*\*(.*?)\*\*\s*```(?:python)?\s*([\s\S]*?)\s*```"
@@ -103,5 +104,6 @@ Only include valid code files. No extra text or explanation.
 
     return {
         **state,
-        "code_generation_success": True
+        "code_generation_success": True,
+        "llm_calls": lm_calls,
     }

@@ -101,6 +101,7 @@ def db_setup_node(state: dict):
         run_subprocess(f"podman start {db_container}")
 
     models_code = generate_db_models(state["srs_analysis"])
+    lm_calls = state.get("llm_calls", 0) + 1
     model_file_path = models_dir / "models.py"
     with open(model_file_path, "w") as f:
         f.write(models_code)
@@ -200,5 +201,6 @@ SessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
         **state,
         "db_models_path": str(model_file_path),
         "db_url": db_url_async,
-        "db_setup_success": True
+        "db_init_success": True,
+        "llm_calls": lm_calls,
     }

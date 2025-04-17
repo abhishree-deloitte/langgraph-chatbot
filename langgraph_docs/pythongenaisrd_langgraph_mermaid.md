@@ -1,0 +1,11 @@
+```mermaid
+graph TD
+    analyze_srs --> bootstrap_project
+    bootstrap_project --> setup_database
+    setup_database --> generate_tests
+    generate_tests --> generate_code
+    generate_code --> execute_code
+    execute_code --> zip_project
+    zip_project --> generate_docs
+    generate_docs --> log_langsmith
+```

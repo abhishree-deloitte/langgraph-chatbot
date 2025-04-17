@@ -51,6 +51,7 @@ SRS:
         SystemMessage(content="You are an expert backend architect."),
         HumanMessage(content=prompt)
     ])
+    lm_calls = state.get("llm_calls", 0) + 1
 
     print(f"{GREEN}✅ SRS analysis complete. Project name inferred: {BOLD}{project_name}{RESET}")
 
@@ -62,5 +63,6 @@ SRS:
         **state,
         "project_name": project_name,
         "srs_analysis": response.content,
-        "raw_srs": srs_text
+        "raw_srs": srs_text,
+        "llm_calls": lm_calls,
     }

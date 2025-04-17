@@ -1,0 +1,24 @@
+digraph LangGraph {
+  srs_analysis [label="SRS Analysis Node"]
+  project_bootstrap [label="Project Bootstrap Node"]
+  db_integration [label="DB Integration Node"]
+  tdd [label="TDD Node (Test First)"]
+  code_generation [label="Code Generation Node"]
+  code_execution [label="Code Execution Node"]
+  iteration_memory [label="Iteration Memory Node"]
+  zip_packager [label="Zip & Package Node"]
+  documentation [label="Documentation Node"]
+  langsmith_logging [label="LangSmith Logging Node"]
+  api_endpoint [label="API Endpoint Node"]
+  srs_analysis -> project_bootstrap
+  project_bootstrap -> db_integration
+  db_integration -> tdd
+  tdd -> code_generation
+  code_generation -> code_execution
+  code_execution -> iteration_memory
+  iteration_memory -> code_generation
+  iteration_memory -> zip_packager
+  zip_packager -> documentation
+  documentation -> langsmith_logging
+  langsmith_logging -> api_endpoint
+}

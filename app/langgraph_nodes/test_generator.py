@@ -41,6 +41,7 @@ API Summary:
         SystemMessage(content="You are an expert in Python API testing."),
         HumanMessage(content=prompt)
     ])
+    lm_calls = state.get("llm_calls", 0) + 1
 
     test_file = test_path / "test_routes.py"
     with open(test_file, "w") as f:
@@ -51,5 +52,6 @@ API Summary:
     return {
         **state,
         "tests_generated": True,
-        "test_file": str(test_file)
+        "test_file": str(test_file),
+        "llm_calls": lm_calls,
     }

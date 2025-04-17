@@ -1,0 +1,17 @@
+Project: pythongenaisrd
+SRS File: ./PythonGenAISRD.docx
+Project Path: generated_projects/pythongenaisrd
+Database Setup Success: True
+Code Generation Success: True
+Test Passed: False
+Server Launched: None
+Docs Generated: True
+LLM Calls Made: 5
+Iterations (for retries): 0
+Test Output: 
+ImportError while loading conftest '/home/abhi/Desktop/agent-fastapi-builder/generated_projects/pythongenaisrd/tests/conftest.py'.
+tests/conftest.py:7: in <module>
+    from app.main import app
+app/main.py:2: in <module>
+    from app.api.routes import dashboard_router, lms_router, pods_router, auth_router
+E   ImportError: cannot import name 'dashboard_router' from 'app.api.routes' (unknown location)...
