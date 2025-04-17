@@ -5,14 +5,17 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 from app.utils.docx_parser import extract_text_from_docx
 from dotenv import load_dotenv
+from pathlib import Path
 
 load_dotenv()
 
 
-def analyze_srs_node(file_path: str, model=None):
+def analyze_srs_node(state, model=None):
     """
     LangGraph node to analyze the SRS and extract key backend requirements
     """
+
+    file_path = state["file_path"]
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise EnvironmentError("GROQ_API_KEY is not set in .env file.")
@@ -44,7 +47,11 @@ SRS:
         HumanMessage(content=prompt)
     ])
 
+    project_name = Path(file_path).stem.lower().replace(" ", "_")
+
     return {
+        **state,
+        "project_name": project_name,
         "srs_analysis": response.content,
         "raw_srs": srs_text
     }

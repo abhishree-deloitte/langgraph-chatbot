@@ -35,22 +35,28 @@ ESSENTIAL_FILES = {
     ]),
 }
 
-
-def bootstrap_project_node(project_path: str = "."):
+def bootstrap_project_node(state: dict):
     """
-    LangGraph node to create the folder structure and essential files
+    LangGraph node to create FastAPI folder structure inside project-specific folder
     """
-    print(f"[BOOTSTRAP] Creating project at: {project_path}")
+    project_name = state["project_name"]
+    root_path = Path("generated_projects") / project_name
+    root_path.mkdir(parents=True, exist_ok=True)
 
     for folder in FOLDER_STRUCTURE:
-        path = Path(project_path) / folder
+        path = root_path / folder
         path.mkdir(parents=True, exist_ok=True)
         print(f"  ✓ Created folder: {path}")
 
     for file_rel_path, content in ESSENTIAL_FILES.items():
-        file_path = Path(project_path) / file_rel_path
+        file_path = root_path / file_rel_path
         with open(file_path, "w") as f:
             f.write(content)
         print(f"  ✓ Created file: {file_path}")
 
-    return {"bootstrap_success": True}
+    return {
+        **state,
+        "project_path": str(root_path),
+        "bootstrap_success": True
+    }
+
