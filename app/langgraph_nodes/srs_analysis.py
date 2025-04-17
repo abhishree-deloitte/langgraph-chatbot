@@ -54,6 +54,10 @@ SRS:
 
     print(f"{GREEN}✅ SRS analysis complete. Project name inferred: {BOLD}{project_name}{RESET}")
 
+    # 🧠 Print extracted analysis from LLM
+    print(f"\n{YELLOW}📌 Extracted Requirements from SRS:{RESET}")
+    print(f"{CYAN}{'-'*60}\n{response.content}\n{'-'*60}{RESET}")
+
     return {
         **state,
         "project_name": project_name,
