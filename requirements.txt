@@ -9,3 +9,5 @@ sqlalchemy
 psycopg2-binary
 alembic
 pytest
+langchain-community
+groq

@@ -1,0 +1,12 @@
+Node | Description
+1. SRS Analysis Node | Parse .docx input → Extract functional requirements, endpoints, DB schema, auth needs using LLM.
+2. Project Bootstrap Node | Generate project folder, create venv, install packages, create FastAPI skeleton (based on your provided structure).
+3. DB Integration Node | Set up PostgreSQL with models, schema, alembic migrations, pooling, .env.
+4. TDD Node (Test First) | Generate unit tests before code using Llama-3 70B or other LLM. Use pytest.
+5. Code Generation Node | Create route logic, services, models, and glue code. All modular and compliant with best practices.
+6. Code Execution Node | Run tests and FastAPI server. If errors occur, re-enter the loop and refine code.
+7. Iteration Memory Node | Track past code, variables, and entities to ensure consistency and persistence (e.g., via LangGraph state or PostgreSQL).
+8. Zip & Package Node | Bundle generated code and requirements into a downloadable zip.
+9. Documentation Node | Auto-generate README.md, API docs, and a LangGraph graph using Mermaid or Graphviz.
+10. LangSmith Logging Node | Log every LLM call, API call, and iteration using LangSmith. Enable insights into success/failure patterns.
+11. API Endpoint Node | A FastAPI endpoint that takes in .docx, runs everything, and gives a download + trace link.
