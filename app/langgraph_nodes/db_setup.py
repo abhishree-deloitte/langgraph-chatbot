@@ -1,4 +1,4 @@
-# app/langgraph_nodes/db_setup.py
+# node 3
 
 import os
 import subprocess

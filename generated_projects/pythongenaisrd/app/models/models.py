@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -29,17 +29,9 @@ class Pod(Base):
     name = Column(String, nullable=False)
 
     members = relationship('PodMember', backref='pod')
-    recommendations = relationship('PodRecommendation', backref='pod')
 
 class PodMember(Base):
     __tablename__ = 'pod_members'
     id = Column(Integer, primary_key=True)
     pod_id = Column(Integer, ForeignKey('pods.id'), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    role = Column(Enum('lead_developer', 'ui_ux_designer', name='pod_role'), nullable=False)
-
-class PodRecommendation(Base):
-    __tablename__ = 'pod_recommendations'
-    id = Column(Integer, primary_key=True)
-    pod_id = Column(Integer, ForeignKey('pods.id'), nullable=False)
-    recommended_user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
