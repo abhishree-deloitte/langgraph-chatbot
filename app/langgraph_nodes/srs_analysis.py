@@ -1,4 +1,4 @@
-# app/langgraph_nodes/srs_analysis.py
+# Node 1
 
 import os
 from langchain.chat_models import ChatOpenAI
