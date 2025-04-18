@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends
-from app.services.auth import login, get_current_user
-from app.schemas.auth import Login, User
-from app.dependencies import get_db_session
+from app.services.auth import AuthService
+from app.schemas.auth import LoginCredentials, User
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login")
-async def login_user(credentials: Login, db_session=Depends(get_db_session)):
-    return login(credentials, db_session)
+async def login(credentials: LoginCredentials):
+    service = AuthService()
+    return service.login(credentials)
 
 @router.get("/user")
-async def get_current_user(db_session=Depends(get_db_session)):
-    return get_current_user(db_session)
+async def get_current_user_details():
+    service = AuthService()
+    return service.get_current_user_details()

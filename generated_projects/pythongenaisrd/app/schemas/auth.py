@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
-class Login(BaseModel):
+class LoginCredentials(BaseModel):
     email: str
     password: str
 
 class User(BaseModel):
-    # define user schema
-    pass
+    id: int
+    email: str
+    role: str

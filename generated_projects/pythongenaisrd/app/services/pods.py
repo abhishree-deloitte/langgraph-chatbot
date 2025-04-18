@@ -1,10 +1,18 @@
-from app.dependencies import get_db_session
-from app.models import Pod
+from sqlalchemy.orm import Session
+from app.db.models import Pod, PodMember, User
 
-async def get_pod_details(pod_id: int, db_session):
-    # implement pod details retrieval logic
-    pass
+class PodsService:
+    def __init__(self, db: Session):
+        self.db = db
 
-async def recommend_employee(pod_id: int, employee: RecommendEmployee, db_session):
-    # implement employee recommendation logic
-    pass
+    def assign_employee_to_pod(self, assignment: PodAssignment):
+        # implement pod assignment logic
+        pass
+
+    def get_pod_details(self, pod_id: int):
+        # implement pod details logic
+        pass
+
+    def recommend_employee_for_pod(self, pod_id: int, recommendation: PodRecommendation):
+        # implement pod recommendation logic
+        pass

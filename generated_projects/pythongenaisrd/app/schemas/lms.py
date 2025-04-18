@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-class LeaveApply(BaseModel):
+class LeaveApplication(BaseModel):
     start_date: str
     end_date: str
     reason: str

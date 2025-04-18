@@ -1,4 +1,4 @@
-def test_dashboard_tiles(client):
+def test_get_dashboard_tiles(client):
     response = client.get("/api/dashboard/tiles")
     assert response.status_code == 200
 
@@ -7,7 +7,7 @@ def test_apply_leave(client):
     response = client.post("/api/lms/leaves/apply", json=data)
     assert response.status_code == 201
 
-def test_retrieve_leave_status(client):
+def test_get_leave_status(client):
     response = client.get("/api/lms/leaves/status")
     assert response.status_code == 200
 
@@ -16,6 +16,11 @@ def test_approve_leave(client):
     data = {"status": "approved"}
     response = client.patch(f"/api/lms/leaves/{leave_id}/approve", json=data)
     assert response.status_code == 200
+
+def test_assign_employee_to_pod(client):
+    data = {"employee_id": 1, "pod_id": 1}
+    response = client.post("/api/pods/assign", json=data)
+    assert response.status_code == 201
 
 def test_get_pod_details(client):
     pod_id = 1
@@ -33,6 +38,6 @@ def test_login(client):
     response = client.post("/api/auth/login", json=data)
     assert response.status_code == 200
 
-def test_fetch_current_user_details(client):
+def test_get_current_user_details(client):
     response = client.get("/api/auth/user")
     assert response.status_code == 200

@@ -11,3 +11,4 @@ alembic
 pytest
 langchain-community
 groq
+langsmith

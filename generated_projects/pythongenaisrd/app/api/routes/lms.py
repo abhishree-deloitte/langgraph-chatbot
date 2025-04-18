@@ -1,18 +1,20 @@
 from fastapi import APIRouter, Depends
-from app.services.lms import apply_leave, get_leave_status, approve_leave
-from app.schemas.lms import LeaveApply, LeaveStatus
-from app.dependencies import get_db_session
+from app.services.lms import LmsService
+from app.schemas.lms import LeaveApplication, LeaveStatus
 
-router = APIRouter()
+router = APIRouter(prefix="/leaves", tags=["LMS"])
 
 @router.post("/apply")
-async def apply_for_leave(leave: LeaveApply, db_session=Depends(get_db_session)):
-    return apply_leave(leave, db_session)
+async def apply_for_leave(leave: LeaveApplication):
+    service = LmsService()
+    return service.apply_for_leave(leave)
 
 @router.get("/status")
-async def get_leave_status(db_session=Depends(get_db_session)):
-    return get_leave_status(db_session)
+async def get_leave_status():
+    service = LmsService()
+    return service.get_leave_status()
 
 @router.patch("/{leave_id}/approve")
-async def approve_leave_request(leave_id: int, status: LeaveStatus, db_session=Depends(get_db_session)):
-    return approve_leave(leave_id, status, db_session)
+async def approve_leave(leave_id: int, status: LeaveStatus):
+    service = LmsService()
+    return service.approve_leave(leave_id, status)
