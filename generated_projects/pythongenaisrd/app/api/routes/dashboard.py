@@ -1,9 +1,12 @@
-from fastapi import APIRouter
-from app.services.dashboard import DashboardService
+from fastapi import APIRouter, Depends
+from app.services.user_service import UserService
+from sqlalchemy.orm import Session
+from app.database import get_db
 
-router = APIRouter(prefix="/tiles", tags=["Dashboard"])
+dashboard_router = APIRouter()
 
-@router.get("/")
-async def get_dashboard_tiles():
-    service = DashboardService()
-    return service.get_tiles()
+@dashboard_router.get("/tiles")
+def get_dashboard_tiles(db: Session = Depends(get_db)):
+    user_service = UserService()
+    user = user_service.get_current_user(db, 1)
+    return {"tiles": []}

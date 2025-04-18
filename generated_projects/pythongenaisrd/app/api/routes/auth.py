@@ -1,15 +1,21 @@
-from fastapi import APIRouter, Depends
-from app.services.auth import AuthService
-from app.schemas.auth import LoginCredentials, User
+from fastapi import APIRouter, Depends, HTTPException
+from app.services.user_service import UserService
+from app.schemas.user import UserCreate
+from sqlalchemy.orm import Session
+from app.database import get_db
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+auth_router = APIRouter()
 
-@router.post("/login")
-async def login(credentials: LoginCredentials):
-    service = AuthService()
-    return service.login(credentials)
+@auth_router.post("/login")
+def login(user: UserCreate, db: Session = Depends(get_db)):
+    user_service = UserService()
+    user = user_service.get_user(db, 1)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"token": "token"}
 
-@router.get("/user")
-async def get_current_user_details():
-    service = AuthService()
-    return service.get_current_user_details()
+@auth_router.get("/user")
+def get_current_user(db: Session = Depends(get_db)):
+    user_service = UserService()
+    user = user_service.get_current_user(db, 1)
+    return {"user": user}

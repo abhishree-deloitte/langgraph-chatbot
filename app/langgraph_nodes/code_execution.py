@@ -1,4 +1,4 @@
-# app/langgraph_nodes/code_executor.py
+# node 6 
 
 import os
 import subprocess
@@ -11,19 +11,7 @@ def create_conftest(project_path: Path):
     conftest_file = tests_dir / "conftest.py"
 
     if not conftest_file.exists():
-        conftest_file.write_text("""\
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-
-@pytest.fixture
-def client():
-    return TestClient(app)
-""")
+        conftest_file.write_text("""\nimport sys\nimport os\nsys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))\n\nimport pytest\nfrom fastapi.testclient import TestClient\nfrom app.main import app\n\n@pytest.fixture\ndef client():\n    return TestClient(app)\n""")
         print(f"{GREEN}  ✓ Added Pytest client fixture to:{RESET} {CYAN}{conftest_file}{RESET}")
 
 def install_requirements(project_path: Path):
@@ -34,41 +22,34 @@ def install_requirements(project_path: Path):
     else:
         print(f"{GREEN}✔️ Requirements installed successfully.{RESET}")
 
-def execute_code_node(state):
-    print(f"\n{YELLOW}🚀 Running tests and launching FastAPI app for: {CYAN}{state['project_name']}{RESET}")
+def run_tests_node(state):
+    print(f"\n{YELLOW}🧪 Running tests only for: {CYAN}{state['project_name']}{RESET}")
 
     project_path = Path(state["project_path"])
     pytest_cmd = "pytest tests"
-    uvicorn_cmd = "uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
-    # 🧪 Add test client fixture before testing
     create_conftest(project_path)
-
-    # 📦 Ensure all dependencies are installed
     install_requirements(project_path)
 
-    # ✅ Add PYTHONPATH to environment
     env = os.environ.copy()
     env["PYTHONPATH"] = str(project_path.resolve())
 
-    # ✅ Run Pytest
     test_result = subprocess.run(pytest_cmd, shell=True, cwd=project_path, env=env, capture_output=True)
+    test_output = test_result.stdout.decode() + test_result.stderr.decode()
+
     if test_result.returncode != 0:
-        print(f"{RED}❌ Tests failed:{RESET}\n" + test_result.stdout.decode() + test_result.stderr.decode())
+        print(f"{RED}❌ Tests failed:{RESET}\n" + test_output)
         return {
             **state,
             "test_passed": False,
-            "test_output": test_result.stdout.decode() + test_result.stderr.decode(),
+            "test_output": test_output,
+            "retrying": True,
         }
     else:
         print(f"{GREEN}✔️ Tests passed successfully!{RESET}\n")
-
-    # ✅ Launch FastAPI server (in background)
-    print(f"{YELLOW}🌐 Launching server on http://localhost:8000 ...{RESET}")
-    subprocess.Popen(uvicorn_cmd, shell=True, cwd=project_path, env=env)
-
-    return {
-        **state,
-        "test_passed": True,
-        "server_launched": True
-    }
+        return {
+            **state,
+            "test_passed": True,
+            "test_output": test_output,
+            "retrying": False,
+        }

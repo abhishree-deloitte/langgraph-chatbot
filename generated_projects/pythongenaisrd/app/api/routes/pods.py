@@ -1,20 +1,30 @@
-from fastapi import APIRouter, Depends
-from app.services.pods import PodsService
-from app.schemas.pods import PodAssignment, PodRecommendation
+from fastapi import APIRouter, Depends, HTTPException
+from app.services.pod_service import PodService
+from app.schemas.pod import PodCreate
+from sqlalchemy.orm import Session
+from app.database import get_db
 
-router = APIRouter(prefix="/pods", tags=["PODs"])
+pods_router = APIRouter()
 
-@router.post("/assign")
-async def assign_employee_to_pod(assignment: PodAssignment):
-    service = PodsService()
-    return service.assign_employee_to_pod(assignment)
+@pods_router.post("/assign")
+def assign_employee_to_pod(pod_id: int, user_id: int, db: Session = Depends(get_db)):
+    pod_service = PodService()
+    pod_service.assign_employee_to_pod(db, pod_id, user_id)
+    return {"message": "Employee assigned to pod successfully"}
 
-@router.get("/{pod_id}/details")
-async def get_pod_details(pod_id: int):
-    service = PodsService()
-    return service.get_pod_details(pod_id)
+@pods_router.get("/{pod_id}/details")
+def get_pod_details(pod_id: int, db: Session = Depends(get_db)):
+    pod_service = PodService()
+    pod = pod_service.get_pod(db, pod_id)
+    if not pod:
+        raise HTTPException(status_code=404, detail="Pod not found")
+    return {"pod": pod}
 
-@router.post("/{pod_id}/recommend")
-async def recommend_employee_for_pod(pod_id: int, recommendation: PodRecommendation):
-    service = PodsService()
-    return service.recommend_employee_for_pod(pod_id, recommendation)
+@pods_router.post("/{pod_id}/recommend")
+def recommend_employee_for_pod(pod_id: int, user_id: int, db: Session = Depends(get_db)):
+    pod_service = PodService()
+    pod = pod_service.get_pod(db, pod_id)
+    if not pod:
+        raise HTTPException(status_code=404, detail="Pod not found")
+    pod_service.assign_employee_to_pod(db, pod_id, user_id)
+    return {"message": "Employee recommended for pod successfully"}

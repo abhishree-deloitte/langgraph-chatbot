@@ -6,18 +6,14 @@ Code Generation Success: True
 Test Passed: False
 Server Launched: None
 Docs Generated: True
-LLM Calls Made: 5
-Iterations (for retries): 0
+LLM Calls Made: 9
+Iterations (for retries): 5
 Test Output: 
 ImportError while loading conftest '/home/abhi/Desktop/agent-fastapi-builder/generated_projects/pythongenaisrd/tests/conftest.py'.
 tests/conftest.py:7: in <module>
     from app.main import app
-app/main.py:2: in <module>
-    from app.api.routes import dashboard_router, lms_router, pods_router, auth_router
-app/api/routes/__init__.py:2: in <module>
-    from .dashboard import router as dashboard_router
-app/api/routes/dashboard.py:2: in <module>
-    from app.services.dashboard import DashboardService
-app/services/dashboard.py:2: in <module>
-    from app.db.models import User
-E   ModuleNotFoundError: No module named 'app.db.models'; 'app.db' is not a package...
+app/main.py:6: in <module>
+    from app import models, crud
+app/crud.py:2: in <module>
+    from app.main import SessionLocal
+E   ImportError: cannot import name 'SessionLocal' from partially initialized module 'app.main' (most likely due to a circular import) (/home/abhi/Desktop/agent-fastapi-builder/generated_projects/pythongenaisrd/app/main.py)...

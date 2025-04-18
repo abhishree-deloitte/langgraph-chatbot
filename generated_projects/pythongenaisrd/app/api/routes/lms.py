@@ -1,20 +1,28 @@
-from fastapi import APIRouter, Depends
-from app.services.lms import LmsService
-from app.schemas.lms import LeaveApplication, LeaveStatus
+from fastapi import APIRouter, Depends, HTTPException
+from app.services.leave_service import LeaveService
+from app.schemas.leave import LeaveCreate
+from sqlalchemy.orm import Session
+from app.database import get_db
 
-router = APIRouter(prefix="/leaves", tags=["LMS"])
+lms_router = APIRouter()
 
-@router.post("/apply")
-async def apply_for_leave(leave: LeaveApplication):
-    service = LmsService()
-    return service.apply_for_leave(leave)
+@lms_router.post("/leaves/apply")
+def apply_for_leave(leave: LeaveCreate, db: Session = Depends(get_db)):
+    leave_service = LeaveService()
+    leave_service.create_leave(db, leave, 1)
+    return {"message": "Leave applied successfully"}
 
-@router.get("/status")
-async def get_leave_status():
-    service = LmsService()
-    return service.get_leave_status()
+@lms_router.get("/leaves/status")
+def get_leave_status(db: Session = Depends(get_db)):
+    leave_service = LeaveService()
+    leaves = leave_service.get_leaves(db, 1)
+    return {"leaves": leaves}
 
-@router.patch("/{leave_id}/approve")
-async def approve_leave(leave_id: int, status: LeaveStatus):
-    service = LmsService()
-    return service.approve_leave(leave_id, status)
+@lms_router.patch("/leaves/{leave_id}/approve")
+def approve_leave(leave_id: int, status: str, db: Session = Depends(get_db)):
+    leave_service = LeaveService()
+    leave = leave_service.get_leave(db, leave_id)
+    if not leave:
+        raise HTTPException(status_code=404, detail="Leave not found")
+    leave_service.update_leave(db, leave_id, status)
+    return {"message": "Leave approved successfully"}

@@ -61,6 +61,7 @@ def safe_json(obj):
 
 load_dotenv()
 
+os.makedirs("generated_projects", exist_ok=True)
 app = FastAPI(title="Agentic LangGraph Backend")
 app.mount("/download", StaticFiles(directory="generated_projects"), name="download")
 class FileInput(BaseModel):

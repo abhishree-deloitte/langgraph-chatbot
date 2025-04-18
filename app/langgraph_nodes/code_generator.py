@@ -1,5 +1,3 @@
-# app/langgraph_nodes/code_generator.py
-
 import os
 import re
 from pathlib import Path
@@ -12,7 +10,7 @@ def generate_code_node(state: dict, model=None):
 
     if not model:
         model = ChatOpenAI(
-            model="llama3-70b-8192",
+            model="llama-3.3-70b-versatile",
             temperature=0.25,
             openai_api_key=os.getenv("GROQ_API_KEY"),
             openai_api_base="https://api.groq.com/openai/v1",
@@ -23,6 +21,7 @@ def generate_code_node(state: dict, model=None):
     tests_path = project_path / "tests"
 
     srs = state["srs_analysis"]
+    last_code = state.get("code_snapshot", "")
     models_code = models_path.read_text() if models_path.exists() else "# models.py not found"
 
     # Optional: Include existing test stubs (if any)
@@ -32,8 +31,10 @@ def generate_code_node(state: dict, model=None):
             test_files.append(f"\n# {file.name}\n" + file.read_text())
     test_info = "\n---\nThese are the tests that will be run against your code:\n" + "\n".join(test_files) if test_files else ""
 
-    # 🔥 Updated LLM Prompt
-    prompt = f"""
+    is_retry = state.get("retrying", False)
+    prev_test_output = state.get("test_output", "")
+
+    base_prompt = f"""
 You are a professional FastAPI engineer working in a production-grade environment.
 
 You are tasked with generating clean, modular, production-level code for the following folders:
@@ -78,6 +79,34 @@ Format your response with:
 ```
 Only include valid code files. No extra text or explanation.
 """
+
+    retry_prompt = f"""
+You previously generated code that failed the following tests. You are now being asked to fix only the affected files.
+
+❗Here are the test failures you need to fix:
+{prev_test_output.strip()[:2000]}...
+
+The original models were:
+{models_code}
+
+The Software Requirements:
+{srs}
+
+The current code is:
+{last_code}
+
+The error and test output you received was:
+{test_info}
+
+✅ Fix only the impacted files and preserve working logic elsewhere. Your output must still follow this format:
+**app/path/to/file.py**
+```python
+<code>
+```
+Only include valid code files. No extra text or explanation.
+"""
+
+    prompt = retry_prompt if is_retry else base_prompt
 
     response = model([
         SystemMessage(content="You are a professional backend engineer."),
