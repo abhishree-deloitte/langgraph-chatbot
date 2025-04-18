@@ -1,0 +1,43 @@
+# 🐍 Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.sqlite3
+*.log
+
+# 🔒 Environment & Config
+.env
+.env.*
+
+# 📦 Python Virtual Env
+.venv/
+venv/
+ENV/
+env.bak/
+*.egg-info/
+
+# 📄 IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 📁 LangGraph/AI Output
+langgraph_docs/
+langsmith_logs/
+
+# 🚀 Generated FastAPI Projects
+generated_projects/*
+
+# 🧪 Test Results
+htmlcov/
+.tox/
+pytest_cache/
+coverage.xml
+*.cover
+*.py,cover
+
+# 📦 Zip Files
+*.zip
