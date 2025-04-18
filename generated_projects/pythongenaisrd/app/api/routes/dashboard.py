@@ -1,8 +1,9 @@
 from fastapi import APIRouter
-from app.services.dashboard import get_dashboard_tiles
+from app.services.dashboard import DashboardService
 
-router = APIRouter(prefix="/tiles")
+router = APIRouter()
 
-@router.get("/")
-def get_tiles():
-    return get_dashboard_tiles()
+@router.get("/tiles")
+async def get_dashboard_tiles():
+    service = DashboardService()
+    return service.get_tiles()

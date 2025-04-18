@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
-class PodAssign(BaseModel):
+class AssignPodSchema(BaseModel):
     employee_id: int
     pod_id: int
 
-class PodRecommend(BaseModel):
-    recommended_user_id: int
+class RecommendPodSchema(BaseModel):
+    employee_ids: List[int]

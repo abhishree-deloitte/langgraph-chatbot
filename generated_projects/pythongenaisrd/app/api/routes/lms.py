@@ -1,18 +1,24 @@
 from fastapi import APIRouter, Depends
-from app.services.lms import apply_for_leave, get_leave_status, approve_leave
-from app.schemas.lms import LeaveApply, LeaveStatus
-from app.dependencies import get_db
+from fastapi.security import OAuth2PasswordBearer
+from app.services.lms import LeaveService
+from app.db.models import User
+from app.schemas.lms import ApplyLeaveSchema, LeaveStatusSchema
 
-router = APIRouter(prefix="/leaves")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
-@router.post("/apply")
-def apply_for_leave(leave: LeaveApply, db=Depends(get_db)):
-    return apply_for_leave(db, leave)
+router = APIRouter()
 
-@router.get("/status")
-def get_leave_status(db=Depends(get_db)):
-    return get_leave_status(db)
+@router.post("/leaves/apply")
+async def apply_for_leave(data: ApplyLeaveSchema, user: User = Depends()):
+    service = LeaveService()
+    return service.apply_for_leave(user, data)
+
+@router.get("/leaves/status")
+async def retrieve_leave_status(user: User = Depends()):
+    service = LeaveService()
+    return service.retrieve_leave_status(user)
 
 @router.patch("/{leave_id}/approve")
-def approve_leave(leave_id: int, status: LeaveStatus, db=Depends(get_db)):
-    return approve_leave(db, leave_id, status)
+async def approve_leave(leave_id: int, user: User = Depends()):
+    service = LeaveService()
+    return service.approve_leave(user, leave_id)

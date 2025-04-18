@@ -9,7 +9,6 @@ __pycache__/
 
 # 🔒 Environment & Config
 .env
-.env.*
 
 # 📦 Python Virtual Env
 .venv/

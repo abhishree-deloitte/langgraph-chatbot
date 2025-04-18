@@ -1,14 +1,21 @@
-from app.dependencies import get_db
-from app.models import Leave
+from sqlalchemy.orm import Session
+from app.db.models import Leave, User
 
-def apply_for_leave(db, leave):
-    # implement leave application logic
-    pass
+class LeaveService:
+    def __init__(self, db: Session):
+        self.db = db
 
-def get_leave_status(db):
-    # implement leave status retrieval logic
-    pass
+    def apply_for_leave(self, user: User, data: ApplyLeaveSchema):
+        # implement leave application logic here
+        # for demonstration purposes, return a dummy response
+        return {"leave_id": 1, "status": "pending"}
 
-def approve_leave(db, leave_id, status):
-    # implement leave approval logic
-    pass
+    def retrieve_leave_status(self, user: User):
+        # implement leave status retrieval logic here
+        # for demonstration purposes, return a dummy response
+        return {"leave_id": 1, "status": "pending"}
+
+    def approve_leave(self, user: User, leave_id: int):
+        # implement leave approval logic here
+        # for demonstration purposes, return a dummy response
+        return {"leave_id": 1, "status": "approved"}

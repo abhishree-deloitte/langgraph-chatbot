@@ -1,18 +1,24 @@
 from fastapi import APIRouter, Depends
-from app.services.pods import assign_employee_to_pod, get_pod_details, recommend_employee_for_pod
-from app.schemas.pods import PodAssign, PodRecommend
-from app.dependencies import get_db
+from fastapi.security import OAuth2PasswordBearer
+from app.services.pods import PodService
+from app.db.models import User
+from app.schemas.pods import AssignPodSchema, RecommendPodSchema
 
-router = APIRouter(prefix="/pods")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+
+router = APIRouter()
 
 @router.post("/assign")
-def assign_employee_to_pod(pod: PodAssign, db=Depends(get_db)):
-    return assign_employee_to_pod(db, pod)
+async def assign_employee_to_pod(data: AssignPodSchema, user: User = Depends()):
+    service = PodService()
+    return service.assign_employee_to_pod(user, data)
 
 @router.get("/{pod_id}/details")
-def get_pod_details(pod_id: int, db=Depends(get_db)):
-    return get_pod_details(db, pod_id)
+async def get_pod_details(pod_id: int, user: User = Depends()):
+    service = PodService()
+    return service.get_pod_details(user, pod_id)
 
 @router.post("/{pod_id}/recommend")
-def recommend_employee_for_pod(pod_id: int, pod: PodRecommend, db=Depends(get_db)):
-    return recommend_employee_for_pod(db, pod_id, pod)
+async def recommend_employees_for_pod(pod_id: int, data: RecommendPodSchema, user: User = Depends()):
+    service = PodService()
+    return service.recommend_employees_for_pod(user, pod_id, data)

@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
-class LeaveApply(BaseModel):
+class ApplyLeaveSchema(BaseModel):
     start_date: str
     end_date: str
     reason: str
 
-class LeaveStatus(BaseModel):
+class LeaveStatusSchema(BaseModel):
+    leave_id: int
     status: str

@@ -1,5 +1,11 @@
-from app.dependencies import get_db
+from sqlalchemy.orm import Session
+from app.db.models import User
 
-def get_dashboard_tiles(db):
-    # implement dashboard tile logic
-    pass
+class DashboardService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_tiles(self):
+        # implement dashboard tile logic here
+        # for demonstration purposes, return a dummy response
+        return {"tiles": [{"id": 1, "name": "Tile 1"}, {"id": 2, "name": "Tile 2"}]}
