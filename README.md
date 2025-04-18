@@ -20,7 +20,7 @@ An **autonomous agent** powered by **LangGraph**, **Llama 3**, and **FastAPI** t
 2. The LangGraph workflow kicks off:
    - Parses SRS using LLM
    - Extracts project name
-   - Bootstraps project folder inside `/generated_projects/<project_name>`
+   - Bootstraps project fold    # 📄 DOT fileer inside `/generated_projects/<project_name>`
    - Sets up PostgreSQL container using Podman
    - Generates SQLAlchemy models & Alembic migrations
    - Generates schemas, routes, and services based on extracted logic
