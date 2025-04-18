@@ -1,17 +1,14 @@
 from fastapi import APIRouter, Depends
-from fastapi.security import OAuth2PasswordBearer
-from app.services.auth import AuthService
-from app.schemas.auth import LoginSchema
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+from app.services.auth import login, get_current_user
+from app.schemas.auth import Login, User
+from app.dependencies import get_db_session
 
 router = APIRouter()
 
 @router.post("/login")
-async def login(data: LoginSchema):
-    service = AuthService()
-    return service.login(data)
+async def login_user(credentials: Login, db_session=Depends(get_db_session)):
+    return login(credentials, db_session)
 
 @router.get("/user")
-async def get_current_user(user: User = Depends()):
-    return user
+async def get_current_user(db_session=Depends(get_db_session)):
+    return get_current_user(db_session)

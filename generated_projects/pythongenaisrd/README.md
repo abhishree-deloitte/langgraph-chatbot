@@ -6,10 +6,10 @@ Here is the production-grade README.md for the FastAPI project:
 **Project Summary**
 ---------------
 
-pythongenaisrd is a FastAPI-based project that provides a comprehensive solution for leave management, pod management, and dashboard insights. The project is built using a modular code structure, with generated services and schemas using Pydantic. It utilizes PostgreSQL as the database management system, with Alembic for database migrations.
+pythongenaisrd is a FastAPI-based project that provides a comprehensive platform for leave management, pod management, and dashboard visualization. The project implements a robust architecture with a PostgreSQL database, utilizing SQLAlchemy and Alembic for database migrations. The API is built using FastAPI, with Pydantic for data modeling and Pytest for testing.
 
 **Setup & Installation**
--------------------------
+------------------------
 
 ### Prerequisites
 
@@ -17,63 +17,93 @@ pythongenaisrd is a FastAPI-based project that provides a comprehensive solution
 * PostgreSQL 13+
 * pip
 
-### Installation
+### Install dependencies
 
-1. Clone the repository: `git clone https://github.com/your-username/pythongenaisrd.git`
-2. Create a virtual environment: `python -m venv venv`
-3. Activate the virtual environment: `source venv/bin/activate` (on Linux/macOS) or `venv\Scripts\activate` (on Windows)
-4. Install dependencies: `pip install -r requirements.txt`
-5. Create a `.env` file with the following variables:
-	* `DATABASE_URL`: PostgreSQL connection URL (e.g., `postgresql://user:password@localhost:5432/dbname`)
-	* `SECRET_KEY`: Secret key for JWT authentication (e.g., `your_secret_key_here`)
-6. Run database migrations: `alembic upgrade head`
+Run the following command to install the required dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+### Environment Variables
+
+Create a `.env` file in the project root with the following variables:
+
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+SECRET_KEY=your_secret_key
+```
+
+Replace the placeholders with your actual database credentials and secret key.
 
 **How to Run the Server**
 -------------------------
 
-1. Activate the virtual environment: `source venv/bin/activate` (on Linux/macOS) or `venv\Scripts\activate` (on Windows)
-2. Run the server: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+### Development Mode
+
+Run the following command to start the development server:
+
+```
+uvicorn app.main:app --reload
+```
+
+### Production Mode
+
+Run the following command to start the production server:
+
+```
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
+```
 
 **API Documentation**
 -------------------
 
-API documentation is available at:
+The API documentation is available at:
 
 * Swagger: `http://localhost:8000/docs`
 * ReDoc: `http://localhost:8000/redoc`
 
-**.env Instructions**
----------------------
-
-Create a `.env` file in the project root with the following variables:
-
-* `DATABASE_URL`: PostgreSQL connection URL (e.g., `postgresql://user:password@localhost:5432/dbname`)
-* `SECRET_KEY`: Secret key for JWT authentication (e.g., `your_secret_key_here`)
-
 **Modular Code Structure**
----------------------------
+-------------------------
 
-The project follows a modular code structure, with the following directories:
+The project follows a modular code structure, with separate directories for models, services, and API routes. This allows for easy maintenance and extension of the codebase.
 
-* `app`: Main application code
-	+ `models`: Database models using SQLAlchemy
-	+ `services`: Business logic services
-	+ `schemas`: Pydantic schemas for API requests and responses
-	+ `api`: API routes and endpoints
-* `alembic`: Database migrations using Alembic
-* `tests`: Unit tests using Pytest
+* `app/models`: Define database models using Pydantic.
+* `app/services`: Implement business logic and database interactions.
+* `app/api`: Define API endpoints and routes.
+* `app/db`: Initialize the database connection and migrations.
 
 **Generated Services and Schemas**
----------------------------------
+--------------------------------
 
-The project uses Pydantic to generate services and schemas for the API. These generated files are located in the `app/services` and `app/schemas` directories, respectively.
+The project utilizes generated services and schemas to simplify code maintenance and reduce boilerplate code.
 
-**Tech Stack**
--------------
+* `app/services/__init__.py`: Automatically generates service classes based on the database models.
+* `app/schemas/__init__.py`: Automatically generates schema classes based on the database models.
 
-* FastAPI: Web framework
-* PostgreSQL: Database management system
-* SQLAlchemy: ORM for database interactions
-* Alembic: Database migration tool
-* Pydantic: Schema generation and validation
-* Pytest: Unit testing framework
+**Testing**
+---------
+
+The project uses Pytest for unit testing and integration testing. Run the following command to execute the tests:
+
+```
+pytest
+```
+
+**License**
+---------
+
+This project is licensed under the MIT License. See `LICENSE` for details.
+
+**Contributing**
+------------
+
+Contributions are welcome! Please open an issue or submit a pull request to contribute to the project.
+
+**Acknowledgments**
+---------------
+
+This project was generated using the FastAPI template and follows best practices for FastAPI development.

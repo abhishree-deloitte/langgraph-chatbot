@@ -1,9 +1,12 @@
-from sqlalchemy.orm import Session
-from app.database import get_db
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine
+from app.config import DATABASE_URL
 
-def get_db():
-    db = get_db()
+async def get_db_session():
+    engine = create_async_engine(DATABASE_URL)
+    Session = sessionmaker(bind=engine, class_=AsyncSession)
+    session = Session()
     try:
-        yield db
+        yield session
     finally:
-        db.close()
+        await session.close()
