@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
@@ -9,7 +9,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-    role = Column(Enum('employee', 'manager', name='user_role'), nullable=False)
+    role = Column(Enum('manager', 'employee', name='user_role'), nullable=False)
 
     leaves = relationship('Leave', backref='user')
     pod_memberships = relationship('PodMember', backref='user')

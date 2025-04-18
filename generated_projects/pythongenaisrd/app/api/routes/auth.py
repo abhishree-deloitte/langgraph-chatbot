@@ -1,15 +1,26 @@
-from fastapi import APIRouter, Depends
-from fastapi import HTTPException
-from app.services import auth_service
-from app.schemas import LoginSchema
-from app.dependencies import get_db
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from app import services
+from app.schemas import UserLogin, Token
+from sqlalchemy.orm import Session
 
-auth_router = APIRouter(prefix="/api/auth", tags=["Auth"])
+router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-@auth_router.post("/login")
-async def user_login(login: LoginSchema, db = Depends(get_db)):
-    return auth_service.user_login(login, db)
+@router.post("/login")
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends()):
+    user = services.authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=services.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = services.create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
-@auth_router.get("/user")
-async def fetch_current_user_details(db = Depends(get_db)):
-    return auth_service.fetch_current_user_details(db)
+@router.get("/user")
+async def get_current_user(current_user: User = Depends(services.get_current_user)):
+    return current_user

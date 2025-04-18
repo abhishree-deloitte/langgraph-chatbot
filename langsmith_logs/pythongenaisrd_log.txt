@@ -10,11 +10,8 @@ LLM Calls Made: 9
 Iterations (for retries): 5
 Test Output: 
 ImportError while loading conftest '/home/abhi/Desktop/agent-fastapi-builder/generated_projects/pythongenaisrd/tests/conftest.py'.
-tests/conftest.py:7: in <module>
+tests/conftest.py:8: in <module>
     from app.main import app
-app/main.py:3: in <module>
-    from jose import jwt, JWTError
-E     File "/home/abhi/Desktop/agent-fastapi-builder/.venv/lib/python3.12/site-packages/jose.py", line 546
-E       print decrypt(deserialize_compact(jwt), {'k':key},
-E       ^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?...
+app/main.py:11: in <module>
+    import jwt
+E   ModuleNotFoundError: No module named 'jwt'...

@@ -1,10 +1,10 @@
 Here is the production-grade README.md for the FastAPI project:
 
 **pythongenaisrd**
-================
+=====================
 
 **Project Summary**
-pythongenaisrd is a FastAPI project that provides a robust and scalable API for managing dashboard data, leave management, project-oriented development, and authentication and authorization. The project is built using FastAPI, PostgreSQL (SQLAlchemy), Alembic, Pydantic, and Pytest.
+pythongenaisrd is a FastAPI project that provides a comprehensive platform for leave management, pod management, and dashboard features. The project is built using FastAPI, PostgreSQL (SQLAlchemy), Alembic, Pydantic, and Pytest.
 
 **Setup & Installation**
 -------------------------
@@ -21,141 +21,91 @@ Run the following command to install the required dependencies:
 ```
 pip install -r requirements.txt
 ```
-
 ### Environment Variables
 
 Create a `.env` file in the root directory with the following variables:
 ```
-DATABASE_URL=postgresql://username:password@localhost/dbname
+DB_USER=your_username
+DB_PASSWORD=your_password
+DB_HOST=your_host
+DB_NAME=your_database
 SECRET_KEY=your_secret_key
 ```
-Replace `username`, `password`, `localhost`, `dbname`, and `your_secret_key` with your actual database credentials and secret key.
-
-### Database Setup
-
-Run the following command to create the database schema:
-```
-alembic upgrade head
-```
+Replace the placeholders with your actual database credentials and secret key.
 
 **How to Run the Server**
 -------------------------
 
-Run the following command to start the server:
-```
-uvicorn app.api:app --host 0.0.0.0 --port 8000
-```
-The server will be available at `http://localhost:8000`.
+### Development Mode
 
+Run the following command to start the development server:
+```
+uvicorn app.main:app --reload
+```
+### Production Mode
+
+Run the following command to start the production server:
+```
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
+```
 **API Documentation**
--------------------
+---------------------
 
-API documentation is available at:
-```
-http://localhost:8000/docs (Swagger)
-http://localhost:8000/redoc (ReDoc)
-```
+### Swagger
 
+Access the API documentation using Swagger at:
+```
+http://localhost:8000/api/docs
+```
+### Redoc
+
+Access the API documentation using Redoc at:
+```
+http://localhost:8000/api/redoc
+```
 **Modular Code Structure**
 -------------------------
 
-The project follows a modular code structure, with separate directories for models, services, routers, schemas, and crud operations. This allows for easy maintenance and extension of the API.
+The project follows a modular code structure, with separate directories for models, services, schemas, and API routes. This allows for easy maintenance and extension of the application.
 
 **Generated Services and Schemas**
 ---------------------------------
 
-The project uses Pydantic to generate services and schemas based on the database schema. This ensures that the API is strongly typed and follows the database schema.
+The project uses Pydantic to generate services and schemas based on the database schema. This ensures consistency and reduces boilerplate code.
 
 **Testing**
 ----------
 
-The project uses Pytest for unit testing. Run the following command to run the tests:
+The project uses Pytest for unit testing and integration testing. Run the following command to execute the tests:
 ```
 pytest
 ```
+**Database Migrations**
+-----------------------
 
-**Security**
-----------
+The project uses Alembic for database migrations. Run the following command to apply migrations:
+```
+alembic upgrade head
+```
+**License**
+---------
 
-The project implements secure authentication using JWT tokens and Role-Based Access Control (RBAC). API rate-limiting and end-to-end encryption are also implemented for security.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-**Endpoints**
-----------
+**Contributing**
+--------------
 
-### Dashboard
+Contributions are welcome! Please open a pull request to contribute to the project.
 
-* `GET /api/dashboard/tiles` - Fetch dashboard data
+**Acknowledgments**
+----------------
 
-### LMS (Leave Management System)
+This project was built using the following technologies:
 
-* `POST /api/lms/leaves/apply` - Apply for leave
-	+ Body: `start_date`, `end_date`, `reason`
-* `GET /api/lms/leaves/status` - Retrieve leave status
-* `PATCH /api/lms/leaves/{leave_id}/approve` - Approve/reject leave (manager only)
-	+ Body: `status`
+* FastAPI
+* PostgreSQL (SQLAlchemy)
+* Alembic
+* Pydantic
+* Pytest
 
-### PODs (Project Oriented Development)
-
-* `POST /api/pods/assign` - Assign employee to pod
-* `GET /api/pods/{pod_id}/details` - Get pod details
-* `POST /api/pods/{pod_id}/recommend` - Recommend employee for pod
-	+ Body: `recommended_user_id`
-
-### Authentication & Authorization
-
-* `POST /api/auth/login` - User login
-	+ Body: `email`, `password`
-* `GET /api/auth/user` - Fetch current user details
-
-**Database Schema**
--------------------
-
-### users table
-
-* `id` (primary key)
-* `email`
-* `password` (hashed)
-* `role` (enum: employee, manager)
-
-### leaves table
-
-* `id` (primary key)
-* `user_id` (foreign key referencing `users.id`)
-* `start_date`
-* `end_date`
-* `reason`
-* `status` (enum: pending, approved, rejected)
-
-### pods table
-
-* `id` (primary key)
-* `name`
-
-### pod_members table
-
-* `id` (primary key)
-* `pod_id` (foreign key referencing `pods.id`)
-* `user_id` (foreign key referencing `users.id`)
-* `role`
-
-**Business Logic and Rules**
------------------------------
-
-### Leave Management
-
-* Employees can apply for leaves with a specific category (e.g., paid leave, sick leave)
-* Managers can approve or reject leave requests with comments
-* Leave balances are tracked and updated accordingly
-
-### Pods Management
-
-* Managers can assign employees to specific pods
-* Employees can view their assigned pod
-* Employees can recommend colleagues for inclusion in a pod
-
-### Authentication and Authorization
-
-* Users can log in with their email and password
-* Managers have access to both manager and employee-related APIs
-* Employees can only access user-specific APIs
-* Role-Based Access Control (RBAC) is implemented
+Special thanks to the maintainers of these projects for their hard work and dedication.

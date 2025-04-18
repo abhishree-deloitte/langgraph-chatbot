@@ -1,18 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import jwt, JWTError
+from fastapi import FastAPI
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends
 from pydantic import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from typing import List
+import jwt
 from datetime import datetime, timedelta
-import os
-
-# Replace the old import with the correct one
-from jose.backends import RSAKeyStore
 
 # Define the database connection
 SQLALCHEMY_DATABASE_URL = "sqlite:///./sqlalchemy.db"
@@ -28,7 +25,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-    role = Column(Enum('employee', 'manager', name='user_role'), nullable=False)
+    role = Column(Enum('manager', 'employee', name='user_role'), nullable=False)
 
     leaves = relationship('Leave', backref='user')
     pod_memberships = relationship('PodMember', backref='user')
@@ -61,206 +58,137 @@ Base.metadata.create_all(bind=engine)
 # Define the FastAPI app
 app = FastAPI()
 
-# Define the OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+# Define the authentication scheme
+security = HTTPBearer()
 
-# Define the token settings
-SECRET_KEY = "secret_key"
+# Define the token secret key
+SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Define the token verification function
-def verify_token(token: str):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except JWTError:
-        raise HTTPException(
-            status_code=401,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+# Define the login and registration endpoints
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
-# Define the login endpoint
-@app.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    # Replace the old import with the correct one
-    from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["bcrypt"], default="bcrypt")
+class TokenData(BaseModel):
+    email: str | None = None
+
+def get_db():
     db = SessionLocal()
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    if not pwd_context.verify(form_data.password, user.password):
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    try:
+        yield db
+    finally:
+        db.close()
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+@app.post("/api/auth/login", response_model=Token)
+async def login_for_access_token(email: str, password: str):
+    db = next(get_db())
+    user = db.query(User).filter(User.email == email).first()
+    if not user or user.password != password:
+        return {"access_token": "", "token_type": "bearer"}
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = jwt.encode(
-        {"sub": user.email, "exp": datetime.utcnow() + access_token_expires},
-        SECRET_KEY,
-        algorithm=ALGORITHM,
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+# Define the authentication dependency
+async def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+        token_data = TokenData(email=email)
+    except JWTError:
+        raise credentials_exception
+    db = next(get_db())
+    user = db.query(User).filter(User.email == token_data.email).first()
+    if user is None:
+        raise credentials_exception
+    return user
 
 # Define the dashboard endpoint
 @app.get("/api/dashboard/tiles")
-async def get_dashboard_tiles(token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
+async def get_dashboard_tiles(current_user: User = Depends(get_current_user)):
     return {"message": "Hello, World!"}
 
-# Define the leave application endpoint
+# Define the leave management endpoints
 @app.post("/api/lms/leaves/apply")
-async def apply_for_leave(data: dict, token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
-    db = SessionLocal()
-    user = db.query(User).filter(User.email == payload["sub"]).first()
-    leave = Leave(user_id=user.id, start_date=data["start_date"], end_date=data["end_date"], reason=data["reason"], status="pending")
+async def apply_for_leave(start_date: str, end_date: str, reason: str, current_user: User = Depends(get_current_user)):
+    db = next(get_db())
+    leave = Leave(user_id=current_user.id, start_date=start_date, end_date=end_date, reason=reason, status="pending")
     db.add(leave)
     db.commit()
-    db.close()
-    return {"message": "Leave applied successfully"}
+    db.refresh(leave)
+    return {"id": leave.id}
 
-# Define the leave status endpoint
 @app.get("/api/lms/leaves/status")
-async def get_leave_status(token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
-    db = SessionLocal()
-    user = db.query(User).filter(User.email == payload["sub"]).first()
-    leaves = db.query(Leave).filter(Leave.user_id == user.id).all()
-    return [{"id": leave.id, "start_date": leave.start_date, "end_date": leave.end_date, "reason": leave.reason, "status": leave.status} for leave in leaves]
+async def get_leave_status(current_user: User = Depends(get_current_user)):
+    db = next(get_db())
+    leaves = db.query(Leave).filter(Leave.user_id == current_user.id).all()
+    return [{"id": leave.id, "status": leave.status} for leave in leaves]
 
-# Define the leave approval endpoint
 @app.patch("/api/lms/leaves/{leave_id}/approve")
-async def approve_leave(leave_id: int, data: dict, token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
-    db = SessionLocal()
-    user = db.query(User).filter(User.email == payload["sub"]).first()
-    if user.role != "manager":
-        raise HTTPException(
-            status_code=401,
-            detail="Only managers can approve leaves",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+async def approve_leave(leave_id: int, status: str, current_user: User = Depends(get_current_user)):
+    db = next(get_db())
     leave = db.query(Leave).filter(Leave.id == leave_id).first()
-    if not leave:
-        raise HTTPException(
-            status_code=404,
-            detail="Leave not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    leave.status = data["status"]
-    db.commit()
-    db.close()
-    return {"message": "Leave approved successfully"}
+    if leave:
+        leave.status = status
+        db.commit()
+        db.refresh(leave)
+        return {"id": leave.id}
+    return {"error": "Leave not found"}
 
-# Define the pod assignment endpoint
+# Define the pod management endpoints
 @app.post("/api/pods/assign")
-async def assign_employee_to_pod(data: dict, token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
-    db = SessionLocal()
-    user = db.query(User).filter(User.email == payload["sub"]).first()
-    if user.role != "manager":
-        raise HTTPException(
-            status_code=401,
-            detail="Only managers can assign employees to pods",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    pod = db.query(Pod).filter(Pod.id == data["pod_id"]).first()
-    if not pod:
-        raise HTTPException(
-            status_code=404,
-            detail="Pod not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    employee = db.query(User).filter(User.id == data["employee_id"]).first()
-    if not employee:
-        raise HTTPException(
-            status_code=404,
-            detail="Employee not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    pod_member = PodMember(pod_id=pod.id, user_id=employee.id)
-    db.add(pod_member)
-    db.commit()
-    db.close()
-    return {"message": "Employee assigned to pod successfully"}
+async def assign_employee_to_pod(pod_id: int, employee_id: int, current_user: User = Depends(get_current_user)):
+    db = next(get_db())
+    pod = db.query(Pod).filter(Pod.id == pod_id).first()
+    employee = db.query(User).filter(User.id == employee_id).first()
+    if pod and employee:
+        pod_member = PodMember(pod_id=pod_id, user_id=employee_id)
+        db.add(pod_member)
+        db.commit()
+        db.refresh(pod_member)
+        return {"id": pod_member.id}
+    return {"error": "Pod or employee not found"}
 
-# Define the pod details endpoint
 @app.get("/api/pods/{pod_id}/details")
-async def get_pod_details(pod_id: int, token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
-    db = SessionLocal()
+async def get_pod_details(pod_id: int, current_user: User = Depends(get_current_user)):
+    db = next(get_db())
     pod = db.query(Pod).filter(Pod.id == pod_id).first()
-    if not pod:
-        raise HTTPException(
-            status_code=404,
-            detail="Pod not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    members = db.query(PodMember).filter(PodMember.pod_id == pod.id).all()
-    return {"name": pod.name, "members": [member.user_id for member in members]}
+    if pod:
+        return {"id": pod.id, "name": pod.name}
+    return {"error": "Pod not found"}
 
-# Define the pod recommendation endpoint
 @app.post("/api/pods/{pod_id}/recommend")
-async def recommend_employee_for_pod(pod_id: int, data: dict, token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
-    db = SessionLocal()
+async def recommend_employee_for_pod(pod_id: int, recommended_user_id: int, current_user: User = Depends(get_current_user)):
+    db = next(get_db())
     pod = db.query(Pod).filter(Pod.id == pod_id).first()
-    if not pod:
-        raise HTTPException(
-            status_code=404,
-            detail="Pod not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    employee = db.query(User).filter(User.id == data["recommended_user_id"]).first()
-    if not employee:
-        raise HTTPException(
-            status_code=404,
-            detail="Employee not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    pod_member = PodMember(pod_id=pod.id, user_id=employee.id)
-    db.add(pod_member)
-    db.commit()
-    db.close()
-    return {"message": "Employee recommended for pod successfully"}
+    recommended_user = db.query(User).filter(User.id == recommended_user_id).first()
+    if pod and recommended_user:
+        # Add logic to recommend employee for pod
+        return {"id": pod.id}
+    return {"error": "Pod or employee not found"}
 
-# Define the user login endpoint
-@app.post("/api/auth/login")
-async def login(data: dict):
-    db = SessionLocal()
-    user = db.query(User).filter(User.email == data["email"]).first()
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    if not user.password == data["password"]:
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = jwt.encode(
-        {"sub": user.email, "exp": datetime.utcnow() + access_token_expires},
-        SECRET_KEY,
-        algorithm=ALGORITHM,
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-# Define the user details endpoint
+# Define the authentication endpoint
 @app.get("/api/auth/user")
-async def get_user_details(token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
-    db = SessionLocal()
-    user = db.query(User).filter(User.email == payload["sub"]).first()
-    return {"email": user.email, "role": user.role}
+async def get_current_user_details(current_user: User = Depends(get_current_user)):
+    return {"id": current_user.id, "email": current_user.email}
