@@ -8,6 +8,9 @@ from sqlalchemy import create_engine
 from app.models.models import Base
 from sqlalchemy import create_engine
 from app.models.models import Base
+from sqlalchemy import create_engine
+from app.models.models import Base
+target_metadata = Base.metadata
 target_metadata = Base.metadata
 target_metadata = Base.metadata
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -35,4 +35,3 @@ class PodMember(Base):
     id = Column(Integer, primary_key=True)
     pod_id = Column(Integer, ForeignKey('pods.id'), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    role = Column(String, nullable=False)

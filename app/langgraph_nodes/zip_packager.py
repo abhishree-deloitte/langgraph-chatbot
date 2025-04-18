@@ -17,7 +17,6 @@ def zip_and_document_node(state: dict):
 
     print(f"\n{YELLOW}📦 Documenting and Zipping project: {CYAN}{project_path}{RESET}")
 
-    # ✅ 1. Generate README.md using LLM
     srs = state.get("srs_analysis", "No SRS analysis found.")
     structure = "\n".join([str(p.relative_to(project_path)) for p in project_path.rglob("*") if p.is_dir()])
     readme_prompt = f"""
@@ -60,29 +59,6 @@ Output the entire README.md content — do not skip anything.
     readme_path.write_text(response.content.strip())
     print(f"{GREEN}  ✓ README.md generated using LLM{RESET}")
 
-    # ✅ 2. Generate OpenAPI spec (run server and fetch JSON)
-    uvicorn_cmd = f"uvicorn app.main:app --host 127.0.0.1 --port 8001"
-    process = subprocess.Popen(
-        uvicorn_cmd, shell=True, cwd=project_path,
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-    )
-    time.sleep(2)  # Let server boot
-
-    try:
-        res = requests.get("http://127.0.0.1:8001/openapi.json")
-        if res.status_code == 200:
-            schema_path = project_path / "openapi_schema.json"
-            schema_path.write_text(res.text)
-            print(f"{GREEN}  ✓ OpenAPI schema saved at openapi_schema.json{RESET}")
-        else:
-            print(f"{YELLOW}⚠️ Could not fetch OpenAPI schema (status {res.status_code}){RESET}")
-    except Exception as e:
-        print(f"{YELLOW}⚠️ Failed to fetch OpenAPI schema: {e}{RESET}")
-    finally:
-        process.terminate()
-        process.wait()
-
-    # ✅ 3. Create zip
     if zip_output_path.exists():
         zip_output_path.unlink()
 
@@ -93,6 +69,5 @@ Output the entire README.md content — do not skip anything.
         **state,
         "zip_path": str(zip_output_path),
         "readme_path": str(readme_path),
-        "openapi_path": str(schema_path) if 'schema_path' in locals() else None,
         "llm_calls": lm_calls,
     }

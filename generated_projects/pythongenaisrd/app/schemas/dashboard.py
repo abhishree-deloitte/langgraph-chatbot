@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 
-class DashboardTile(BaseModel):
+class DashboardTileSchema(BaseModel):
     id: int
-    title: str
-    content: str
+    name: str

@@ -12,8 +12,9 @@ Test Output:
 ImportError while loading conftest '/home/abhi/Desktop/agent-fastapi-builder/generated_projects/pythongenaisrd/tests/conftest.py'.
 tests/conftest.py:7: in <module>
     from app.main import app
-app/main.py:6: in <module>
-    from app import models, crud
-app/crud.py:2: in <module>
-    from app.main import SessionLocal
-E   ImportError: cannot import name 'SessionLocal' from partially initialized module 'app.main' (most likely due to a circular import) (/home/abhi/Desktop/agent-fastapi-builder/generated_projects/pythongenaisrd/app/main.py)...
+app/main.py:3: in <module>
+    from jose import jwt, JWTError
+E     File "/home/abhi/Desktop/agent-fastapi-builder/.venv/lib/python3.12/site-packages/jose.py", line 546
+E       print decrypt(deserialize_compact(jwt), {'k':key},
+E       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?...

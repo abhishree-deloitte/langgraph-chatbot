@@ -13,6 +13,7 @@ from app.langgraph_nodes.zip_packager import zip_and_document_node
 from app.langgraph_nodes.langgraph_visualizer import generate_langgraph_docs
 from app.langgraph_nodes.langsmith_logger import generate_langsmith_log
 from app.langgraph_nodes.iteration_memory import store_iteration_node
+from app.langgraph_nodes.code_launcher import launch_code_node
 
 class GraphState(TypedDict):
     file_path: str
@@ -45,6 +46,7 @@ def build_graph():
     builder.add_node("zip_project", zip_and_document_node)
     builder.add_node("generate_docs", generate_langgraph_docs)
     builder.add_node("log_langsmith", generate_langsmith_log)
+    builder.add_node("launch_code", launch_code_node)
 
     # Edges
     builder.set_entry_point("analyze_srs")
@@ -71,6 +73,7 @@ def build_graph():
     builder.add_edge("store_iteration", "generate_code")  # Loop back
     builder.add_edge("zip_project", "generate_docs")
     builder.add_edge("generate_docs", "log_langsmith")
-    builder.set_finish_point("log_langsmith")
+    builder.add_edge("log_langsmith", "launch_code")
+    builder.set_finish_point("launch_code")
 
     return builder.compile()

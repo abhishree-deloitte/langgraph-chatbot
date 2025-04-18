@@ -1,21 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
-from app.services.user_service import UserService
-from app.schemas.user import UserCreate
-from sqlalchemy.orm import Session
-from app.database import get_db
+from fastapi import APIRouter, Depends
+from fastapi import HTTPException
+from app.services import auth_service
+from app.schemas import LoginSchema
+from app.dependencies import get_db
 
-auth_router = APIRouter()
+auth_router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 @auth_router.post("/login")
-def login(user: UserCreate, db: Session = Depends(get_db)):
-    user_service = UserService()
-    user = user_service.get_user(db, 1)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return {"token": "token"}
+async def user_login(login: LoginSchema, db = Depends(get_db)):
+    return auth_service.user_login(login, db)
 
 @auth_router.get("/user")
-def get_current_user(db: Session = Depends(get_db)):
-    user_service = UserService()
-    user = user_service.get_current_user(db, 1)
-    return {"user": user}
+async def fetch_current_user_details(db = Depends(get_db)):
+    return auth_service.fetch_current_user_details(db)
