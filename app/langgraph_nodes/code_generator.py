@@ -68,6 +68,7 @@ Your tech stack:
 - Follow clean code practices, proper naming, separation of concerns
 - All return values should be valid, structured, and realistic
 - Ensure routes are connected to FastAPI app in `main.py`
+- If any new dependency is added, also add them to `requirements.txt`
 - Prefix each router with its appropriate API path:
   - /api/dashboard
   - /api/lms
@@ -105,6 +106,9 @@ The error and test output you received was:
 ```python
 <code>
 ```
+
+If any new dependency is added, also add them to `requirements.txt`
+
 Only include valid code files. No extra text or explanation.
 """
 

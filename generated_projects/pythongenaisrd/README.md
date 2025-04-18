@@ -4,7 +4,9 @@ Here is the production-grade README.md for the FastAPI project:
 =====================
 
 **Project Summary**
-pythongenaisrd is a FastAPI project that provides a comprehensive platform for leave management, pod management, and dashboard features. The project is built using FastAPI, PostgreSQL (SQLAlchemy), Alembic, Pydantic, and Pytest.
+---------------------
+
+pythongenaisrd is a FastAPI project that provides a robust and scalable API for managing dashboard data, leave management, project-oriented development, and authentication and authorization. The project is built using FastAPI, PostgreSQL (with SQLAlchemy), Alembic, Pydantic, and Pytest.
 
 **Setup & Installation**
 -------------------------
@@ -15,97 +17,60 @@ pythongenaisrd is a FastAPI project that provides a comprehensive platform for l
 * PostgreSQL 13+
 * pip
 
-### Install dependencies
+### Installation
 
-Run the following command to install the required dependencies:
-```
-pip install -r requirements.txt
-```
-### Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-```
-DB_USER=your_username
-DB_PASSWORD=your_password
-DB_HOST=your_host
-DB_NAME=your_database
-SECRET_KEY=your_secret_key
-```
-Replace the placeholders with your actual database credentials and secret key.
+1. Clone the repository: `git clone https://github.com/your-username/pythongenaisrd.git`
+2. Install dependencies: `pip install -r requirements.txt`
+3. Create a PostgreSQL database and update the `DATABASE_URL` environment variable in `.env` file.
+4. Run Alembic migrations: `alembic upgrade head`
 
 **How to Run the Server**
 -------------------------
 
-### Development Mode
+1. Run the server: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+2. Open a web browser and navigate to `http://localhost:8000`
 
-Run the following command to start the development server:
-```
-uvicorn app.main:app --reload
-```
-### Production Mode
-
-Run the following command to start the production server:
-```
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
-```
 **API Documentation**
----------------------
+-------------------
 
-### Swagger
+API documentation is available at:
 
-Access the API documentation using Swagger at:
-```
-http://localhost:8000/api/docs
-```
-### Redoc
+* Swagger: `http://localhost:8000/docs`
+* ReDoc: `http://localhost:8000/redoc`
 
-Access the API documentation using Redoc at:
-```
-http://localhost:8000/api/redoc
-```
-**Modular Code Structure**
+**Environment Variables**
 -------------------------
 
-The project follows a modular code structure, with separate directories for models, services, schemas, and API routes. This allows for easy maintenance and extension of the application.
+Create a `.env` file in the project root with the following variables:
 
-**Generated Services and Schemas**
----------------------------------
+* `DATABASE_URL`: PostgreSQL database connection URL (e.g., `postgresql://user:password@localhost/dbname`)
+* `SECRET_KEY`: Secret key for JWT authentication (e.g., `secret_key_here`)
 
-The project uses Pydantic to generate services and schemas based on the database schema. This ensures consistency and reduces boilerplate code.
+**Modular Code and Generated Services/Schemas**
+---------------------------------------------
+
+The project follows a modular code structure, with separate folders for API routes, database models, services, and schemas. Pydantic is used to generate schemas for API responses and requests.
 
 **Testing**
 ----------
 
-The project uses Pytest for unit testing and integration testing. Run the following command to execute the tests:
-```
-pytest
-```
-**Database Migrations**
------------------------
+The project uses Pytest for unit testing. Run tests using `pytest`.
 
-The project uses Alembic for database migrations. Run the following command to apply migrations:
-```
-alembic upgrade head
-```
+**Directory Structure**
+---------------------
+
+* `.pytest_cache/`: Pytest cache directory
+* `alembic/`: Alembic migration directory
+* `app/`: Application code directory
+	+ `api/`: API routes directory
+	+ `database/`: Database models directory
+	+ `models/`: Database models directory
+	+ `routers/`: API routers directory
+	+ `schemas/`: Pydantic schemas directory
+	+ `services/`: Business logic services directory
+* `tests/`: Unit tests directory
+
 **License**
----------
+----------
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
-**Contributing**
---------------
-
-Contributions are welcome! Please open a pull request to contribute to the project.
-
-**Acknowledgments**
-----------------
-
-This project was built using the following technologies:
-
-* FastAPI
-* PostgreSQL (SQLAlchemy)
-* Alembic
-* Pydantic
-* Pytest
-
-Special thanks to the maintainers of these projects for their hard work and dedication.
+This project is licensed under the MIT License. See `LICENSE` for details.

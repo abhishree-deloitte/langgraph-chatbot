@@ -1,26 +1,31 @@
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-from app import services
-from app.schemas import UserLogin, Token
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from app.database import SessionLocal
+from app.database.models import User
+from app.schemas import UserLogin, UserResponse
 
-router = APIRouter(prefix="/api/auth", tags=["auth"])
+router = APIRouter()
 
 @router.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends()):
-    user = services.authenticate_user(db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+def login(user: UserLogin):
+    db = SessionLocal()
+    user_obj = db.query(User).filter(User.email == user.email).first()
+    if user_obj and user_obj.password == user.password:
+        return UserResponse(
+            id=user_obj.id,
+            name=user_obj.name,
+            email=user_obj.email,
         )
-    access_token_expires = timedelta(minutes=services.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = services.create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"message": "Invalid email or password"}
 
 @router.get("/user")
-async def get_current_user(current_user: User = Depends(services.get_current_user)):
-    return current_user
+def get_current_user():
+    db = SessionLocal()
+    user_obj = db.query(User).first()
+    if user_obj:
+        return UserResponse(
+            id=user_obj.id,
+            name=user_obj.name,
+            email=user_obj.email,
+        )
+    return {"message": "User not found"}

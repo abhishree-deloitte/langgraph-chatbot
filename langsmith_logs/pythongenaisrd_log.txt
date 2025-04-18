@@ -3,15 +3,18 @@ SRS File: ./PythonGenAISRD.docx
 Project Path: generated_projects/pythongenaisrd
 Database Setup Success: True
 Code Generation Success: True
-Test Passed: False
+Test Passed: True
 Server Launched: None
 Docs Generated: True
-LLM Calls Made: 9
-Iterations (for retries): 5
+LLM Calls Made: 7
+Iterations (for retries): 3
 Test Output: 
-ImportError while loading conftest '/home/abhi/Desktop/agent-fastapi-builder/generated_projects/pythongenaisrd/tests/conftest.py'.
-tests/conftest.py:8: in <module>
-    from app.main import app
-app/main.py:11: in <module>
-    import jwt
-E   ModuleNotFoundError: No module named 'jwt'...
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.5, pluggy-1.5.0
+rootdir: /mnt/c/Users/abhishrlnu/Downloads/agent-fastapi-builder/agent-fastapi-builder/generated_projects/pythongenaisrd
+plugins: anyio-4.9.0, langsmith-0.3.32
+collected 9 items
+
+tests/test_routes.py .........                                           [100%]
+
+============================== 9 passed in 0.26s ===============================...

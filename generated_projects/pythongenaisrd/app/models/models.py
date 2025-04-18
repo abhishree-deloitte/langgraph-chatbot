@@ -1,37 +1,38 @@
 from sqlalchemy import Column, Integer, String, Enum, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
-    email = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)
-    role = Column(Enum('manager', 'employee', name='user_role'), nullable=False)
+    name = Column(String)
+    email = Column(String, unique=True)
+    password = Column(String)
+    role = Column(Enum('manager', 'employee'))
 
-    leaves = relationship('Leave', backref='user')
+    leaves = relationship('Leave', backref='user', name='enum_manager_employee_Leave_user')
     pod_memberships = relationship('PodMember', backref='user')
 
 class Leave(Base):
     __tablename__ = 'leaves'
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    start_date = Column(DateTime, nullable=False)
-    end_date = Column(DateTime, nullable=False)
-    reason = Column(String, nullable=False)
-    status = Column(Enum('pending', 'approved', 'rejected', name='leave_status'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
+    reason = Column(String)
+    status = Column(Enum('pending', 'approved', 'rejected'))
 
-class Pod(Base):
+class Pod(Base):, name='enum_pending_approved_rejected')
     __tablename__ = 'pods'
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String)
 
     members = relationship('PodMember', backref='pod')
 
 class PodMember(Base):
     __tablename__ = 'pod_members'
     id = Column(Integer, primary_key=True)
-    pod_id = Column(Integer, ForeignKey('pods.id'), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    pod_id = Column(Integer, ForeignKey('pods.id'))
+    user_id = Column(Integer, ForeignKey('users.id'))

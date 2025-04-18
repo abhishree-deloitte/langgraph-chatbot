@@ -1,22 +1,51 @@
-from fastapi import APIRouter, Depends, HTTPException
-from app import services
-from app.schemas import LeaveCreate, Leave
-from sqlalchemy.orm import Session
-from typing import List
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from app.database import SessionLocal
+from app.database.models import Leave, User
+from app.schemas import LeaveApply, LeaveStatus, LeaveApprove
+from app.services import lms_service
 
-router = APIRouter(prefix="/api/lms", tags=["lms"])
+router = APIRouter()
 
 @router.post("/leaves/apply")
-async def apply_leave(leave: LeaveCreate, db: Session = Depends(), current_user: User = Depends(services.get_current_user)):
-    db_leave = services.create_leave(db, leave, current_user.id)
-    return db_leave
+def apply_for_leave(leave: LeaveApply):
+    db = SessionLocal()
+    user = db.query(User).filter(User.id == leave.user_id).first()
+    if user:
+        leave_obj = Leave(
+            user_id=leave.user_id,
+            start_date=leave.start_date,
+            end_date=leave.end_date,
+            reason=leave.reason,
+        )
+        db.add(leave_obj)
+        db.commit()
+        return {"message": "Leave applied successfully"}
+    return {"message": "User not found"}
 
 @router.get("/leaves/status")
-async def get_leave_status(db: Session = Depends(), current_user: User = Depends(services.get_current_user)):
-    leaves = services.get_leaves(db, current_user.id)
-    return leaves
+def get_leave_status():
+    db = SessionLocal()
+    leaves = db.query(Leave).all()
+    leave_status = []
+    for leave in leaves:
+        status = LeaveStatus(
+            id=leave.id,
+            user_id=leave.user_id,
+            start_date=leave.start_date,
+            end_date=leave.end_date,
+            reason=leave.reason,
+            status=leave.status,
+        )
+        leave_status.append(status)
+    return leave_status
 
 @router.patch("/leaves/{leave_id}/approve")
-async def approve_leave(leave_id: int, status: str, db: Session = Depends(), current_user: User = Depends(services.get_current_user)):
-    db_leave = services.update_leave(db, leave_id, status)
-    return db_leave
+def approve_leave(leave_id: int, leave: LeaveApprove):
+    db = SessionLocal()
+    leave_obj = db.query(Leave).filter(Leave.id == leave_id).first()
+    if leave_obj:
+        leave_obj.status = leave.status
+        db.commit()
+        return {"message": "Leave approved/rejected successfully"}
+    return {"message": "Leave not found"}

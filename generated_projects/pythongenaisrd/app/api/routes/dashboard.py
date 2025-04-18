@@ -1,11 +1,20 @@
-from fastapi import APIRouter, Depends
-from app import services
-from app.schemas import User
-from sqlalchemy.orm import Session
-from typing import List
+from fastapi import APIRouter
+from app.database import SessionLocal
+from app.database.models import User
+from app.schemas import DashboardTile
 
-router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
+router = APIRouter()
 
 @router.get("/tiles")
-async def get_dashboard_tiles(current_user: User = Depends(services.get_current_user)):
-    return {"message": "Dashboard tiles"}
+def get_dashboard_tiles():
+    db = SessionLocal()
+    users = db.query(User).all()
+    tiles = []
+    for user in users:
+        tile = DashboardTile(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+        )
+        tiles.append(tile)
+    return tiles
